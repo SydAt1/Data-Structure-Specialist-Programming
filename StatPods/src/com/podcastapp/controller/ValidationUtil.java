@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 public class ValidationUtil {
     private static final Pattern POD_ID_PATTERN = Pattern.compile("^\\d{3}$");
     private static final Pattern POD_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]+$");
-    private static final Pattern GENRE_PATTERN = Pattern.compile("^(Comedy|Education|Technology|Horror|Audiobook|Interview|Culture)$");
+    private static final Pattern GENRE_PATTERN = Pattern.compile("^(Comedy|Education|Technology|Horror|Audiobook|Interview|Culture|Story|Religion)$");
     private static final Pattern HOST_NAME_PATTERN = Pattern.compile("^[a-zA-Z\\s]+$");
     private static final Pattern LISTENING_HOURS_PATTERN = Pattern.compile("^\\d{1,4}$");
     private static final Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
