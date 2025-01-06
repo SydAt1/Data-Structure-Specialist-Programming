@@ -2,6 +2,12 @@ package com.podcastapp.view;
 
 import com.podcastapp.model.PodcastModel;
 import com.podcastapp.controller.ValidationUtil;
+import com.podcastapp.controller.algorithm.CustomInsertionSort;
+import com.podcastapp.controller.algorithm.CustomSelectionSort;
+import com.podcastapp.controller.algorithm.BinarySearchAlgorithm;
+import com.podcastapp.controller.algorithm.CustomMergeSort;
+import com.podcastapp.controller.datastructure.CustomQueue;
+import com.podcastapp.controller.datastructure.CustomStack;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,6 +16,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -24,15 +32,14 @@ import javax.swing.table.DefaultTableModel;
  */
 public class PodcastApp extends javax.swing.JFrame {
 
-    private List<PodcastModel> podcastList;
     private java.awt.CardLayout cardLayout;
     private final ValidationUtil validationUtil;
 
     /**
      * Creates new form CollegeApp
      */
-    
     public PodcastApp() {
+        this.podcastQueue = new CustomQueue(10);
         initComponents();
         podcastsList = new LinkedList<>(); // Initialize the list
         validationUtil = new ValidationUtil();
@@ -60,6 +67,19 @@ public class PodcastApp extends javax.swing.JFrame {
         pnlPodcastList = new javax.swing.JPanel();
         spTblStudent = new javax.swing.JScrollPane();
         tblPodcast = new javax.swing.JTable();
+        pnlWishList = new javax.swing.JPanel();
+        lblTblWishList = new javax.swing.JLabel();
+        queueField = new javax.swing.JTextField();
+        queuePods = new javax.swing.JButton();
+        queueError = new javax.swing.JLabel();
+        pnlFilter = new javax.swing.JPanel();
+        lblTblFilter = new javax.swing.JLabel();
+        filterBox = new javax.swing.JComboBox<>();
+        filterBtn = new javax.swing.JButton();
+        lblTblStudentTitle1 = new javax.swing.JLabel();
+        lblTblStudentTitle3 = new javax.swing.JLabel();
+        searchField = new javax.swing.JTextField();
+        searchBtn = new javax.swing.JButton();
         pnlAdmin = new javax.swing.JPanel();
         AddPnl = new javax.swing.JPanel();
         idField = new javax.swing.JTextField();
@@ -87,9 +107,15 @@ public class PodcastApp extends javax.swing.JFrame {
         idField1 = new javax.swing.JTextField();
         idError1 = new javax.swing.JLabel();
         deleteBtn = new javax.swing.JButton();
+        pnlQueuePods = new javax.swing.JPanel();
+        spTblPodsQueue = new javax.swing.JScrollPane();
+        tblQueuePodcast = new javax.swing.JTable();
+        lblTblStudentTitle2 = new javax.swing.JLabel();
+        playPodcastBtn = new javax.swing.JButton();
+        rewindBtn = new javax.swing.JButton();
         pnlAboutUs = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        aboutUsLbl = new javax.swing.JLabel();
+        statPodBgImg = new javax.swing.JLabel();
         pnlLoginScreen = new javax.swing.JPanel();
         lblLoginTitle = new javax.swing.JLabel();
         txtFldLoginUsername = new javax.swing.JTextField();
@@ -182,31 +208,191 @@ public class PodcastApp extends javax.swing.JFrame {
         spTblStudent.setViewportView(tblPodcast);
         if (tblPodcast.getColumnModel().getColumnCount() > 0) {
             tblPodcast.getColumnModel().getColumn(0).setResizable(false);
+            tblPodcast.getColumnModel().getColumn(0).setHeaderValue("Podcast ID");
             tblPodcast.getColumnModel().getColumn(1).setResizable(false);
             tblPodcast.getColumnModel().getColumn(2).setResizable(false);
             tblPodcast.getColumnModel().getColumn(3).setResizable(false);
             tblPodcast.getColumnModel().getColumn(4).setResizable(false);
             tblPodcast.getColumnModel().getColumn(4).setPreferredWidth(40);
+            tblPodcast.getColumnModel().getColumn(4).setHeaderValue("Upload Date");
             tblPodcast.getColumnModel().getColumn(5).setResizable(false);
+            tblPodcast.getColumnModel().getColumn(5).setHeaderValue("Listening Minutes");
             tblPodcast.getColumnModel().getColumn(6).setResizable(false);
+            tblPodcast.getColumnModel().getColumn(6).setHeaderValue("Ratings");
             tblPodcast.getColumnModel().getColumn(7).setResizable(false);
+            tblPodcast.getColumnModel().getColumn(7).setHeaderValue("Podcast Studios");
         }
+
+        pnlWishList.setBackground(new java.awt.Color(58, 66, 83));
+        pnlWishList.setForeground(new java.awt.Color(255, 255, 255));
+
+        lblTblWishList.setBackground(new java.awt.Color(255, 255, 255));
+        lblTblWishList.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblTblWishList.setForeground(new java.awt.Color(255, 255, 255));
+        lblTblWishList.setText("Podcast Wishlist");
+
+        queueField.setBackground(new java.awt.Color(58, 66, 83));
+        queueField.setFont(new java.awt.Font("Bahnschrift", 0, 12)); // NOI18N
+        queueField.setForeground(new java.awt.Color(255, 255, 255));
+        queueField.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 2), "Podcast ID", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Bahnschrift", 1, 12), new java.awt.Color(255, 255, 255))); // NOI18N
+
+        queuePods.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/podcastapp/resources/icon_queue.png"))); // NOI18N
+        queuePods.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                queuePodsActionPerformed(evt);
+            }
+        });
+
+        queueError.setForeground(new java.awt.Color(255, 51, 51));
+
+        javax.swing.GroupLayout pnlWishListLayout = new javax.swing.GroupLayout(pnlWishList);
+        pnlWishList.setLayout(pnlWishListLayout);
+        pnlWishListLayout.setHorizontalGroup(
+            pnlWishListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlWishListLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlWishListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblTblWishList, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnlWishListLayout.createSequentialGroup()
+                        .addGroup(pnlWishListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(queueError, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(queueField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(queuePods, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(12, Short.MAX_VALUE))
+        );
+        pnlWishListLayout.setVerticalGroup(
+            pnlWishListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlWishListLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblTblWishList)
+                .addGap(8, 8, 8)
+                .addGroup(pnlWishListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(queueField, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(queuePods))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(queueError)
+                .addContainerGap(28, Short.MAX_VALUE))
+        );
+
+        pnlFilter.setBackground(new java.awt.Color(58, 66, 83));
+        pnlFilter.setForeground(new java.awt.Color(255, 255, 255));
+
+        lblTblFilter.setBackground(new java.awt.Color(255, 255, 255));
+        lblTblFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblTblFilter.setForeground(new java.awt.Color(255, 255, 255));
+        lblTblFilter.setText("Filter:");
+
+        filterBox.setBackground(new java.awt.Color(58, 66, 83));
+        filterBox.setForeground(new java.awt.Color(255, 255, 255));
+        filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "By PodcastID", "By Podcast Name", "Most Listened To", "Best Rated" }));
+        filterBox.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        filterBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/podcastapp/resources/icon_filter.png"))); // NOI18N
+        filterBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterBtnActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout pnlFilterLayout = new javax.swing.GroupLayout(pnlFilter);
+        pnlFilter.setLayout(pnlFilterLayout);
+        pnlFilterLayout.setHorizontalGroup(
+            pnlFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlFilterLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblTblFilter, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnlFilterLayout.createSequentialGroup()
+                        .addComponent(filterBox, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(filterBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(19, Short.MAX_VALUE))
+        );
+        pnlFilterLayout.setVerticalGroup(
+            pnlFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlFilterLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblTblFilter)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(pnlFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(filterBox, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(filterBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        lblTblStudentTitle1.setBackground(new java.awt.Color(255, 255, 255));
+        lblTblStudentTitle1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblTblStudentTitle1.setForeground(new java.awt.Color(255, 255, 255));
+        lblTblStudentTitle1.setText("Podcast Information");
+
+        lblTblStudentTitle3.setBackground(new java.awt.Color(255, 255, 255));
+        lblTblStudentTitle3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        lblTblStudentTitle3.setForeground(new java.awt.Color(255, 255, 255));
+        lblTblStudentTitle3.setText("Podcast Information:");
+
+        searchField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                searchFieldFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                searchFieldFocusLost(evt);
+            }
+        });
+
+        searchBtn.setText("Search");
+        searchBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchBtnActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnlPodcastListLayout = new javax.swing.GroupLayout(pnlPodcastList);
         pnlPodcastList.setLayout(pnlPodcastListLayout);
         pnlPodcastListLayout.setHorizontalGroup(
             pnlPodcastListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlPodcastListLayout.createSequentialGroup()
-                .addGap(74, 74, 74)
-                .addComponent(spTblStudent, javax.swing.GroupLayout.PREFERRED_SIZE, 963, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(119, Short.MAX_VALUE))
+                .addGap(27, 27, 27)
+                .addGroup(pnlPodcastListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlPodcastListLayout.createSequentialGroup()
+                        .addComponent(lblTblStudentTitle3, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, 212, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(searchBtn)
+                        .addGap(6, 6, 6))
+                    .addComponent(spTblStudent, javax.swing.GroupLayout.PREFERRED_SIZE, 1051, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnlPodcastListLayout.createSequentialGroup()
+                        .addComponent(pnlWishList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(pnlFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(78, Short.MAX_VALUE))
+            .addGroup(pnlPodcastListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnlPodcastListLayout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(lblTblStudentTitle1)
+                    .addGap(0, 0, Short.MAX_VALUE)))
         );
         pnlPodcastListLayout.setVerticalGroup(
             pnlPodcastListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlPodcastListLayout.createSequentialGroup()
-                .addGap(34, 34, 34)
-                .addComponent(spTblStudent, javax.swing.GroupLayout.PREFERRED_SIZE, 339, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(55, Short.MAX_VALUE))
+                .addContainerGap(16, Short.MAX_VALUE)
+                .addGroup(pnlPodcastListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblTblStudentTitle3, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(searchBtn))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(spTblStudent, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlPodcastListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(pnlFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(pnlWishList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(22, 22, 22))
+            .addGroup(pnlPodcastListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnlPodcastListLayout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(lblTblStudentTitle1)
+                    .addGap(0, 0, Short.MAX_VALUE)))
         );
 
         tabPaneMain.addTab("Podcasts List", pnlPodcastList);
@@ -283,7 +469,7 @@ public class PodcastApp extends javax.swing.JFrame {
                 clearBtnActionPerformed(evt);
             }
         });
-        AddPnl.add(clearBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 40, 56, -1));
+        AddPnl.add(clearBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(1050, 40, 50, 50));
 
         lblTblStudentTitle.setBackground(new java.awt.Color(255, 255, 255));
         lblTblStudentTitle.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -411,18 +597,106 @@ public class PodcastApp extends javax.swing.JFrame {
 
         tabPaneMain.addTab("User Control", pnlAdmin);
 
+        pnlQueuePods.setBackground(new java.awt.Color(0, 0, 0));
+
+        tblQueuePodcast.setBackground(new java.awt.Color(23, 26, 32));
+        tblQueuePodcast.setForeground(new java.awt.Color(255, 255, 255));
+        tblQueuePodcast.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Queue No.", "Podcast Name", "Genre", "Host Name"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblQueuePodcast.setGridColor(new java.awt.Color(0, 0, 0));
+        tblQueuePodcast.setSelectionBackground(new java.awt.Color(0, 0, 0));
+        tblQueuePodcast.setSelectionForeground(new java.awt.Color(234, 192, 32));
+        tblQueuePodcast.setShowGrid(true);
+        tblQueuePodcast.getTableHeader().setReorderingAllowed(false);
+        spTblPodsQueue.setViewportView(tblQueuePodcast);
+        if (tblQueuePodcast.getColumnModel().getColumnCount() > 0) {
+            tblQueuePodcast.getColumnModel().getColumn(0).setResizable(false);
+            tblQueuePodcast.getColumnModel().getColumn(1).setResizable(false);
+            tblQueuePodcast.getColumnModel().getColumn(2).setResizable(false);
+            tblQueuePodcast.getColumnModel().getColumn(3).setResizable(false);
+        }
+
+        lblTblStudentTitle2.setBackground(new java.awt.Color(255, 255, 255));
+        lblTblStudentTitle2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblTblStudentTitle2.setForeground(new java.awt.Color(255, 255, 255));
+        lblTblStudentTitle2.setText("Podcast Information");
+
+        playPodcastBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/podcastapp/resources/icon_forward.png"))); // NOI18N
+        playPodcastBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                playPodcastBtnActionPerformed(evt);
+            }
+        });
+
+        rewindBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/podcastapp/resources/icon_rewind.png"))); // NOI18N
+        rewindBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rewindBtnActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout pnlQueuePodsLayout = new javax.swing.GroupLayout(pnlQueuePods);
+        pnlQueuePods.setLayout(pnlQueuePodsLayout);
+        pnlQueuePodsLayout.setHorizontalGroup(
+            pnlQueuePodsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlQueuePodsLayout.createSequentialGroup()
+                .addGroup(pnlQueuePodsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlQueuePodsLayout.createSequentialGroup()
+                        .addGap(44, 44, 44)
+                        .addGroup(pnlQueuePodsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(pnlQueuePodsLayout.createSequentialGroup()
+                                .addGap(134, 134, 134)
+                                .addComponent(spTblPodsQueue, javax.swing.GroupLayout.PREFERRED_SIZE, 752, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(lblTblStudentTitle2)))
+                    .addGroup(pnlQueuePodsLayout.createSequentialGroup()
+                        .addGap(470, 470, 470)
+                        .addComponent(rewindBtn)
+                        .addGap(18, 18, 18)
+                        .addComponent(playPodcastBtn)))
+                .addContainerGap(228, Short.MAX_VALUE))
+        );
+        pnlQueuePodsLayout.setVerticalGroup(
+            pnlQueuePodsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlQueuePodsLayout.createSequentialGroup()
+                .addContainerGap(10, Short.MAX_VALUE)
+                .addComponent(lblTblStudentTitle2)
+                .addGap(8, 8, 8)
+                .addComponent(spTblPodsQueue, javax.swing.GroupLayout.PREFERRED_SIZE, 255, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(pnlQueuePodsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(playPodcastBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(rewindBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(68, 68, 68))
+        );
+
+        tabPaneMain.addTab("Queue Pods", pnlQueuePods);
+
         pnlAboutUs.setBackground(new java.awt.Color(0, 0, 0));
         pnlAboutUs.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(23, 26, 32), 1, true));
         pnlAboutUs.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jLabel2.setFont(new java.awt.Font("Bahnschrift", 0, 9)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel2.setText("<html>StatsPods is a data-driven insights platform positioned<br> to revolutionize how podcast lovers will interact with their favorite content. Founded in 2024 amidst a booming landscape that houses over 40 million podcast listeners on Spotify, we empower users with high-scale analytics and personalized insights to comprehend their listening behavior more effectively. Through combining potent tracking capabilities with intuitive features, this service offers listeners the facility to keep track of habits, discover new content, and mark podcasts in your queue more easily than ever. Be it tracking hours listened, analyzing genre preferences, or maintaining a curated wishlist-StatsPods is here to be your personal analytics companion for podcasts and to let you make the most out of the listening experience while uncovering meaningful patterns in content consumption. ");
-        jLabel2.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
-        pnlAboutUs.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 160, 240, 230));
+        aboutUsLbl.setFont(new java.awt.Font("Bahnschrift", 0, 9)); // NOI18N
+        aboutUsLbl.setForeground(new java.awt.Color(255, 255, 255));
+        aboutUsLbl.setText("<html>StatsPods is a data-driven insights platform positioned<br> to revolutionize how podcast lovers will interact with their favorite content. Founded in 2024 amidst a booming landscape that houses over 40 million podcast listeners on Spotify, we empower users with high-scale analytics and personalized insights to comprehend their listening behavior more effectively. Through combining potent tracking capabilities with intuitive features, this service offers listeners the facility to keep track of habits, discover new content, and mark podcasts in your queue more easily than ever. Be it tracking hours listened, analyzing genre preferences, or maintaining a curated wishlist-StatsPods is here to be your personal analytics companion for podcasts and to let you make the most out of the listening experience while uncovering meaningful patterns in content consumption. ");
+        aboutUsLbl.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
+        pnlAboutUs.add(aboutUsLbl, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 160, 240, 230));
 
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/podcastapp/resources/img_aboutus.jpg"))); // NOI18N
-        pnlAboutUs.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1120, 430));
+        statPodBgImg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/podcastapp/resources/img_aboutus.jpg"))); // NOI18N
+        pnlAboutUs.add(statPodBgImg, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1120, 430));
 
         tabPaneMain.addTab("About Us", pnlAboutUs);
 
@@ -486,11 +760,6 @@ public class PodcastApp extends javax.swing.JFrame {
         txtFldLoginUsername.setForeground(new java.awt.Color(255, 255, 255));
         txtFldLoginUsername.setText("admin");
         txtFldLoginUsername.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 2, true), "Username", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 1, 12), new java.awt.Color(255, 255, 255))); // NOI18N
-        txtFldLoginUsername.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtFldLoginUsernameActionPerformed(evt);
-            }
-        });
 
         pwdFldLogin.setBackground(new java.awt.Color(23, 26, 32));
         pwdFldLogin.setForeground(new java.awt.Color(255, 255, 255));
@@ -526,38 +795,38 @@ public class PodcastApp extends javax.swing.JFrame {
         pnlLoginScreen.setLayout(pnlLoginScreenLayout);
         pnlLoginScreenLayout.setHorizontalGroup(
             pnlLoginScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlLoginScreenLayout.createSequentialGroup()
+                .addGap(0, 371, Short.MAX_VALUE)
+                .addComponent(lblLoginError, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(499, 499, 499))
             .addGroup(pnlLoginScreenLayout.createSequentialGroup()
                 .addGroup(pnlLoginScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlLoginScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(lblLoginSubTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 569, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(pnlLoginScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(pnlLoginScreenLayout.createSequentialGroup()
+                                .addGap(299, 299, 299)
+                                .addComponent(lblLoginTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 529, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(pnlLoginScreenLayout.createSequentialGroup()
+                                .addGap(429, 429, 429)
+                                .addGroup(pnlLoginScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(pwdFldLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtFldLoginUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                     .addGroup(pnlLoginScreenLayout.createSequentialGroup()
-                        .addGap(400, 400, 400)
-                        .addComponent(lblLoginLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(pnlLoginScreenLayout.createSequentialGroup()
-                        .addGap(264, 264, 264)
+                        .addGap(323, 323, 323)
                         .addComponent(lblLoginForgotPwd, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnlLoginScreenLayout.createSequentialGroup()
-                        .addGap(227, 227, 227)
-                        .addComponent(lblLoginTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 529, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(433, 433, 433)
+                        .addComponent(btnLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnlLoginScreenLayout.createSequentialGroup()
-                        .addGap(206, 206, 206)
-                        .addComponent(lblLoginSubTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 569, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(355, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlLoginScreenLayout.createSequentialGroup()
-                .addGroup(pnlLoginScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(pnlLoginScreenLayout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(pwdFldLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(pnlLoginScreenLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(pnlLoginScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(lblLoginError, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtFldLoginUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(499, 499, 499))
+                        .addGap(478, 478, 478)
+                        .addComponent(lblLoginLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pnlLoginScreenLayout.setVerticalGroup(
             pnlLoginScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlLoginScreenLayout.createSequentialGroup()
-                .addContainerGap(19, Short.MAX_VALUE)
+                .addContainerGap(13, Short.MAX_VALUE)
                 .addComponent(lblLoginLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblLoginTitle)
@@ -571,7 +840,7 @@ public class PodcastApp extends javax.swing.JFrame {
                 .addComponent(lblLoginForgotPwd)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addComponent(lblLoginError, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(12, 12, 12))
         );
@@ -644,7 +913,14 @@ public class PodcastApp extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 // Method to set up the CardLayout and add panels
-
+    
+    /**
+    * Initializes the layout of the main application window using a CardLayout.
+    * <p>
+    * This method sets up the content pane with different panels for the loading screen,
+    * login screen, and main screen. It starts by displaying the loading screen.
+    * </p>
+    */
     private void initializeLayout() {
         cardLayout = new java.awt.CardLayout();
         getContentPane().setLayout(cardLayout);
@@ -658,7 +934,10 @@ public class PodcastApp extends javax.swing.JFrame {
         cardLayout.show(getContentPane(), "LoadingScreen");
     }
 
-    // Method to initialize data, including student list and table
+     /**
+     * Initializes the application's data, including the podcast list and table.
+     * Populates the podcast list with sample data for demonstration purposes.
+     */
     private void initializeData() {
         podcastsList = new LinkedList<>();
 
@@ -686,7 +965,11 @@ public class PodcastApp extends javax.swing.JFrame {
     }
 
 
-    // Method to simulate loading progress
+     /**
+     * Simulates the loading progress using a SwingWorker thread. Updates a
+     * progress bar incrementally and switches to the login screen upon
+     * completion.
+     */
     private void startProgress() {
         javax.swing.SwingWorker<Void, Integer> worker = new javax.swing.SwingWorker<>() {
             @Override
@@ -712,25 +995,22 @@ public class PodcastApp extends javax.swing.JFrame {
         worker.execute();
     }
 
-     //Method to add student data and populate the table
-//    private void registerPodcast(PodcastModel podcast) {
-//        podcastsList.add(podcast); // Add podcast to the list
-//        DefaultTableModel model = (DefaultTableModel) tblPodcast.getModel();
-//        model.addRow(new Object[]{
-//            podcast.getPodcastId(), 
-//            podcast.getPodcastName(), 
-//            podcast.getGenre(), 
-//            podcast.getHostName(), 
-//            podcast.getUploadDate(), 
-//            podcast.getListening()
-//        });
-//}
-
-    // Method to switch screens
+    /**
+     * Switches the application screen to the specified screen name.
+     *
+     * @param screenName The name of the screen to display.
+     */
     private void loadScreen(String screenName) {
         cardLayout.show(getContentPane(), screenName);
     }
-
+    
+    /**
+     * Handles the login button action. Validates the username and password
+     * input and navigates to the main screen if credentials are correct.
+     * Displays appropriate error messages otherwise.
+     *
+     * @param evt The action event triggered by the login button.
+     */
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         // Get the username and password input
         String username = txtFldLoginUsername.getText();
@@ -748,7 +1028,13 @@ public class PodcastApp extends javax.swing.JFrame {
             loadScreen("MainScreen"); // Load the main screen
         }
     }//GEN-LAST:event_btnLoginActionPerformed
-
+    
+    /**
+     * Handles the logout button action. Clears the login fields and switches
+     * back to the login screen.
+     *
+     * @param evt The action event triggered by the logout button.
+     */
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
         pwdFldLogin.setText("");
         txtFldLoginUsername.setText("");
@@ -758,7 +1044,17 @@ public class PodcastApp extends javax.swing.JFrame {
     Border defaultBorder = BorderFactory.createLineBorder(Color.WHITE);
     Border errorBorder = BorderFactory.createLineBorder(Color.RED);
     
-    // Create titled border factory method for reuse
+    /**
+    * Creates a TitledBorder with the specified title and border.
+    * <p>
+    * The title color is set to red if the provided border is the error border;
+    * otherwise, it is set to white.
+    * </p>
+    *
+    * @param title the title to be displayed on the border.
+    * @param border the border to be used for the TitledBorder.
+    * @return a TitledBorder with the specified title and color.
+    */
     private TitledBorder createTitledBorder(String title, Border border) {
         
         TitledBorder titledBorder = BorderFactory.createTitledBorder(border, title);
@@ -768,6 +1064,12 @@ public class PodcastApp extends javax.swing.JFrame {
     
     private List<PodcastModel> podcastsList = new LinkedList<>();
     
+    /**
+    * Checks if a podcast with the specified ID exists in the podcast list.
+    *
+    * @param podId the ID of the podcast to check.
+    * @return {@code true} if a podcast with the given ID exists; {@code false} otherwise.
+    */
     private boolean isPodcastIdExists(int podId) {
     for (PodcastModel podcast : podcastsList) {
         if (podcast.getPodcastId() == podId) {
@@ -775,7 +1077,15 @@ public class PodcastApp extends javax.swing.JFrame {
         }
     }
     return false;
-}
+    }
+    
+    /**
+     * Event handler for the Add button action. Validates input fields, creates
+     * a new podcast record if valid, and checks for duplicate Podcast IDs before
+     * adding the record to the podcast list.
+     *
+     * @param evt the ActionEvent triggered by the Add button
+     */
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
         resetBorder();
         errorTextReset();
@@ -922,7 +1232,7 @@ public class PodcastApp extends javax.swing.JFrame {
         podcastsList.add(newPodcast);
 
         // Refresh table and save data
-        addListToTable();
+        addListToTable(podcastsList);
         savePodcastData();
         
         //Show Success Message upon adding a podcast to the table
@@ -932,7 +1242,13 @@ public class PodcastApp extends javax.swing.JFrame {
         clearForm();
         resetBorder();
     }//GEN-LAST:event_addBtnActionPerformed
-
+    
+    /**
+    * Serializes and saves the current podcasts list to a binary file.
+    * The file is located at {@code user.dir/src/com/podcastapp/view/file.bin}.
+    * 
+    * @throws IOException if an I/O error occurs during saving.
+    */
     private void savePodcastData() {
     try {
         String filePath = System.getProperty("user.dir") + "/src/com/podcastapp/view/file.bin";
@@ -952,8 +1268,12 @@ public class PodcastApp extends javax.swing.JFrame {
         }
     }
 
-    
-    private void addListToTable() {
+    /**
+     * Updates the table with the provided list of podcasts.
+     *
+     * @param list the list of PodcastModel objects to display in the table
+     */
+    private void addListToTable(List<PodcastModel> podcastsList1) {
         // Clear the table
         DefaultTableModel model = (DefaultTableModel) tblPodcast.getModel();
         model.setRowCount(0); // Clear all existing rows
@@ -976,6 +1296,9 @@ public class PodcastApp extends javax.swing.JFrame {
         System.out.println("Rows in table model: " + model.getRowCount());
     }
     
+    /**
+    * Resets the borders of the input fields to titled borders with default styling.
+    */
     private void resetBorder(){
         idField.setBorder(createTitledBorder("Podcast ID", defaultBorder));
         nameField.setBorder(createTitledBorder("Podcast Name", defaultBorder));
@@ -985,9 +1308,11 @@ public class PodcastApp extends javax.swing.JFrame {
         listeningField.setBorder(createTitledBorder("Listening Hours", defaultBorder));
         podStudioField.setBorder(createTitledBorder("Podcast Studios", defaultBorder));
         ratingField.setBorder(createTitledBorder("Ratings", defaultBorder)); // Added ratingsField reset
-
     }
     
+    /**
+    * Clears all input fields in the form by setting their text to an empty string.
+    */
     private void clearForm() {
         // Clear the input fields
         idField.setText("");
@@ -999,12 +1324,26 @@ public class PodcastApp extends javax.swing.JFrame {
         listeningField.setText("");
         ratingField.setText("");
     }
-
-
+    
+    /**
+    * Handles the action event for the clear button.
+    * Calls the {@link #clearForm()} method to reset all input fields.
+    *
+    * @param evt the action event triggered by the clear button.
+    */
     private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearBtnActionPerformed
         clearForm();
     }//GEN-LAST:event_clearBtnActionPerformed
-
+    
+    /**
+    * Handles the window closed event.
+    * <p>
+    * This method retrieves data from the podcast table model, serializes it,
+    * and saves it to a binary file located at {@code user.dir/src/com/podcastapp/view/file.bin}.
+    * </p>
+    *
+    * @param evt the window event triggered when the form is closed.
+    */
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
         try {
             // Get the data from the table model
@@ -1045,7 +1384,17 @@ public class PodcastApp extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_formWindowClosed
-
+    
+    /**
+    * Handles the window opened event.
+    * <p>
+    * This method checks for the existence of a data file at {@code user.dir/src/com/podcastapp/view/file.bin}.
+    * If the file exists, it deserializes the podcast data into the {@code podcastsList} and populates
+    * the podcast table with the loaded data. If the file does not exist, it initializes with an empty list.
+    * </p>
+    *
+    * @param evt the window event triggered when the form is opened.
+    */
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         try {
             String filePath = System.getProperty("user.dir") + "/src/com/podcastapp/view/file.bin";
@@ -1090,7 +1439,17 @@ public class PodcastApp extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_formWindowOpened
-
+    
+    /**
+    * Handles the window opened event.
+    * <p>
+    * This method checks for the existence of a data file at {@code user.dir/src/com/podcastapp/view/file.bin}.
+    * If the file exists, it deserializes the podcast data into the {@code podcastsList} and populates
+    * the podcast table with the loaded data. If the file does not exist, it initializes with an empty list.
+    * </p>
+    *
+    * @param evt the window event triggered when the form is opened.
+    */
     private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
         // Clear the error label and reset the border
         idError1.setText("");
@@ -1145,7 +1504,7 @@ public class PodcastApp extends javax.swing.JFrame {
         podcastsList.removeIf(podcast -> podcast.getPodcastId() == podId);
 
         // Update the table
-        addListToTable();
+        addListToTable(podcastsList);
 
         // Save the updated data to file
         savePodcastData();
@@ -1162,6 +1521,10 @@ public class PodcastApp extends javax.swing.JFrame {
         );
     }//GEN-LAST:event_deleteBtnActionPerformed
     
+    /**
+    * Resets all error message fields to empty strings.
+    * This method is used to clear any displayed validation errors in the form.
+    */
     private void errorTextReset(){
         idError.setText("");
         nameError.setText("");
@@ -1173,6 +1536,16 @@ public class PodcastApp extends javax.swing.JFrame {
         podStudioError.setText("");
     }
     
+    /**
+    * Handles the action event for the update button.
+    * <p>
+    * This method validates the input fields, updates the podcast details in the list,
+    * and saves the changes to a file. It also manages error messages and user confirmations.
+    * If no fields are updated, it prompts the user accordingly.
+    * </p>
+    *
+    * @param evt the action event triggered by the update button.
+    */
     private void updateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
         // Reset the border and error labels
         resetBorder();
@@ -1332,7 +1705,7 @@ public class PodcastApp extends javax.swing.JFrame {
         }
 
         // Update the table
-        addListToTable();
+        addListToTable(podcastsList);
 
         // Save the updated data to file
         savePodcastData();
@@ -1354,9 +1727,305 @@ public class PodcastApp extends javax.swing.JFrame {
         tabPaneMain.setSelectedComponent(pnlPodcastList);
     }//GEN-LAST:event_updateBtnActionPerformed
 
-    private void txtFldLoginUsernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFldLoginUsernameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtFldLoginUsernameActionPerformed
+    private final CustomQueue podcastQueue;
+    
+    /**
+    * Handles the action event for queuing a podcast.
+    * <p>
+    * This method retrieves the Podcast ID from the input field, validates it,
+    * checks if the podcast exists, and adds it to the podcast queue. If successful,
+    * it updates the queue table and displays a success message. It also handles
+    * various error scenarios, including invalid input and a full queue.
+    * </p>
+    *
+    * @param evt the action event triggered by the queue button.
+    */
+    private void queuePodsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queuePodsActionPerformed
+            try {
+            // Retrieve the Podcast ID from the JTextField
+            String podcastIdStr = queueField.getText().trim();
+
+            if (podcastIdStr.isEmpty()) {
+                queueError.setText("Enter a PodcastID you want to queue");
+                queueField.setBorder(createTitledBorder("Podcast ID", errorBorder));
+                return;
+            }
+
+            // Parse the Podcast ID
+            int podcastId;
+            try {
+                podcastId = Integer.parseInt(podcastIdStr);
+            } catch (NumberFormatException e) {
+                queueError.setText("Podcast ID must be a valid number.");
+                queueField.setBorder(createTitledBorder("Podcast ID", errorBorder));
+                return;
+            }
+
+            // Check if the podcast ID exists in the tblPodcast
+            if (!isPodcastIdExists(podcastId)) {
+                queueError.setText("Podcast ID not found in the existing podcast list.");
+                queueField.setBorder(createTitledBorder("Podcast ID", errorBorder));
+                return;
+            }
+
+            // Check if the podcast ID exists and retrieve the PodcastModel
+            PodcastModel podcast = getPodcastById(podcastId);
+
+            if (podcast == null) {
+                JOptionPane.showMessageDialog(this, "Podcast not found for the given ID.", "Not Found", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Enqueue the PodcastModel
+            podcastQueue.enQueue(podcast);
+
+            // Add to JTable (tblQueuePodcast)
+            DefaultTableModel model = (DefaultTableModel) tblQueuePodcast.getModel();
+            model.addRow(new Object[]{
+                podcastQueue.poll(), // Queue Number (size of the queue)
+                podcast.getPodcastName(),   // Podcast Name
+                podcast.getGenre(),  // Genre
+                podcast.getHostName()// Host Name
+            });
+
+            // Clear the input field
+            queueField.setText("");
+
+            JOptionPane.showMessageDialog(this, "Podcast successfully added to the queue.", "Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IllegalStateException e) {
+            JOptionPane.showMessageDialog(this, "Queue is full. Cannot add more podcasts.", "Queue Full", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "An unexpected error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_queuePodsActionPerformed
+    
+    private CustomStack undoStack = new CustomStack();
+    /**
+    * Handles the action event for queuing a podcast.
+    * <p>
+    * This method fetches the Podcast ID from the input field, validates it,
+    * checks if the podcast exists, and adds it to the podcast queue. If successful,
+    * it updates the queue table and displays a success message. It also handles
+    * various error scenarios, including invalid input and a full queue.
+    * </p>
+    *
+    * @param evt the action event triggered by the queue button.
+    */
+    private void playPodcastBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playPodcastBtnActionPerformed
+         DefaultTableModel queueTableModel = (DefaultTableModel) tblQueuePodcast.getModel();
+    
+        if (queueTableModel.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(
+                this,
+                "The queue is empty. No podcast to play.",
+                "Queue Empty",
+                JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        // Get the podcast details before removal
+        Object[] podcastData = new Object[queueTableModel.getColumnCount()];
+        for (int i = 0; i < queueTableModel.getColumnCount(); i++) {
+            podcastData[i] = queueTableModel.getValueAt(0, i);
+        }
+
+        int podcastId = (int) podcastData[0];
+        String podcastName = (String) podcastData[1];
+
+        // Store in undo stack
+        undoStack.push(podcastData);
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Playing Podcast: " + podcastName + " (ID: " + podcastId + ")",
+            "Playing Podcast",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+
+        queueTableModel.removeRow(0);
+    }//GEN-LAST:event_playPodcastBtnActionPerformed
+    
+    /**
+    * Handles the action event for the search button.
+    * <p>
+    * This method retrieves the input from the search field, validates it, and performs a search
+    * for a podcast by either Podcast ID or Podcast Name. It sorts the podcast list as needed
+    * and displays the search results in a dialog. If the input is invalid or the podcast is not found,
+    * appropriate error messages are shown.
+    * </p>
+    *
+    * @param evt the action event triggered by the search button.
+    */
+    private void searchBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBtnActionPerformed
+        // Get the input from the search bar
+        String searchValue = searchField.getText();
+
+        // Validate the input
+        if (searchValue == null || searchValue.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid Podcast Name or ID.", "Search Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // Initialize the result variables
+        PodcastModel result = null;
+        ArrayList<PodcastModel> sortedList = new ArrayList<>(podcastsList);
+        
+        CustomSelectionSort selectionSorter = new CustomSelectionSort();
+        
+        try {
+            if (searchValue.matches("\\d+")) { // If the input is numeric (Podcast ID)
+                int podcastId = Integer.parseInt(searchValue);
+
+                // Sort the list by Podcast ID before performing binary search
+                sortedList = (ArrayList<PodcastModel>) selectionSorter.sortByPodcastId(sortedList, false);
+                result = BinarySearchAlgorithm.performBinarySearchById(podcastId, sortedList, 0, sortedList.size() - 1);
+
+                if (result != null) {
+                    // Display the Podcast Name associated with the Podcast ID
+                    JOptionPane.showMessageDialog(this, 
+                        "Podcast Found: \nPodcast Name: " + result.getPodcastName(),
+                        "Search Result", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Podcast ID not found.", "Search Result", JOptionPane.ERROR_MESSAGE);
+                }
+            } else { // If the input is not numeric (Podcast Name)
+                // Sort the list by Podcast Name before performing binary search
+                sortedList = (ArrayList<PodcastModel>) selectionSorter.sortByName(sortedList, false);
+                result = BinarySearchAlgorithm.performBinarySearchByName(searchValue, sortedList, 0, sortedList.size() - 1);
+
+                if (result != null) {
+                    // Display the Ratings and Listening Hours associated with the Podcast Name
+                    JOptionPane.showMessageDialog(this, 
+                        "Podcast Found: \nRatings: " + result.getRatings() + "\nListening Hours: " + result.getListening(),
+                        "Search Result", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Podcast Name not found.", "Search Result", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid input. Please enter a valid Podcast ID or Name.", "Search Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_searchBtnActionPerformed
+    
+    /**
+    * Clears the placeholder text in the search field when it gains focus.
+    *
+    * @param evt the focus event triggered when the search field gains focus.
+    */
+    private void searchFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchFieldFocusGained
+        // Clear the placeholder text when the search bar gains focus
+        searchField.setText("");
+    }//GEN-LAST:event_searchFieldFocusGained
+    
+    /**
+    * Restores the placeholder text in the search field if it is empty when it loses focus.
+    *
+    * @param evt the focus event triggered when the search field loses focus.
+    */
+    private void searchFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchFieldFocusLost
+        // Restore placeholder text if the search bar is empty
+        if (searchField.getText().isEmpty() || searchField.getText() == null) {
+        searchField.setText("Enter Podcast Name or ID");
+        }
+    }//GEN-LAST:event_searchFieldFocusLost
+
+    private int clickCount = 0;
+    /** 
+     * Sorts the list of Podcast List in the table according to the data in the 
+     * JComboBox named: filterBox
+     * @param evt 
+     */
+    private void filterBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterBtnActionPerformed
+        // Get the selected filter option from the JComboBox
+        String selectedFilter = (String) filterBox.getSelectedItem();
+        // Copy the original list for manipulation
+        List<PodcastModel> filteredList = new ArrayList<>(podcastsList);
+        
+        // Create instances of sorting classes
+        CustomSelectionSort selectionSorter = new CustomSelectionSort();
+        CustomInsertionSort insertionSorter = new CustomInsertionSort();
+        CustomMergeSort mergeSorter = new CustomMergeSort();
+
+        
+        // Determine sort order based on click count
+        boolean isAscending = clickCount % 3 == 1; // First click ascending, second descending
+        
+        switch (selectedFilter) {
+            case "By PodcastID":
+                // Use SelectionSort to sort by PodcastID
+                List<PodcastModel> sortedList = selectionSorter.sortByPodcastId(podcastsList, isAscending);
+                addListToTable(sortedList);
+                break;
+            case "By Podcast Name":
+                // Use SelectionSort to sort by PodcastID
+                List<PodcastModel> nameList = selectionSorter.sortByName(podcastsList, isAscending);
+                addListToTable(nameList);
+                break;
+            case "Most Listened To":
+                // Use InsertionSort to sort by Listening Hours
+                List<PodcastModel> filterList = insertionSorter.sortByListeningHours(podcastsList, isAscending);
+                addListToTable(filterList);
+                break;
+            case "Best Rated":
+                // Use InsertionSort to sort by Listening Hours
+                List<PodcastModel> mergedList = mergeSorter.sortByRatings(podcastsList, isAscending);
+                addListToTable(mergedList);
+                break;
+            default:
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Unknown filter selected. Please try again.",
+                    "Filter Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+                return; // Return early to avoid incrementing clickCount
+        }
+        
+        // Increment click count and reset after third click
+        clickCount = (clickCount + 1) % 3;
+    }//GEN-LAST:event_filterBtnActionPerformed
+
+    private void rewindBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rewindBtnActionPerformed
+        if (undoStack.isEmpty()) {
+        JOptionPane.showMessageDialog(
+            this,
+            "No podcasts to rewind.",
+            "Undo Stack Empty",
+            JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+    
+        DefaultTableModel queueTableModel = (DefaultTableModel) tblQueuePodcast.getModel();
+        Object[] podcastData = undoStack.pop();
+        queueTableModel.insertRow(0, podcastData);
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Rewound Podcast: " + podcastData[1],
+            "Podcast Rewound",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    }//GEN-LAST:event_rewindBtnActionPerformed
+   
+     /**
+     * Retrieves a PodcastModel by its ID.
+     * If the podcast ID exists, returns the PodcastModel; otherwise, returns null.
+     *
+     * @param podId The Podcast ID to check.
+     * @return The PodcastModel if found, null otherwise.
+     */
+    private PodcastModel getPodcastById(int podId) {
+        for (PodcastModel podcast : podcastsList) { // Replace podcastsList with your actual list reference
+            if (podcast.getPodcastId() == podId) {
+                return podcast;
+            }
+        }
+        return null;
+    }
 
     /**
      * @param args the command line arguments
@@ -1397,6 +2066,7 @@ public class PodcastApp extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel AddPnl;
+    private javax.swing.JLabel aboutUsLbl;
     private javax.swing.JButton addBtn;
     private javax.swing.JButton btnLogin;
     private javax.swing.JButton btnLogout;
@@ -1405,6 +2075,8 @@ public class PodcastApp extends javax.swing.JFrame {
     private javax.swing.JButton deleteBtn;
     private javax.swing.JLabel deleteInfo;
     private javax.swing.JPanel deletePanel;
+    private javax.swing.JComboBox<String> filterBox;
+    private javax.swing.JButton filterBtn;
     private javax.swing.JLabel genreError;
     private javax.swing.JTextField genreField;
     private javax.swing.JLabel homePnl;
@@ -1414,8 +2086,6 @@ public class PodcastApp extends javax.swing.JFrame {
     private javax.swing.JLabel idError1;
     private javax.swing.JTextField idField;
     private javax.swing.JTextField idField1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel lblLoading;
     private javax.swing.JLabel lblLoadingLogo;
     private javax.swing.JLabel lblLoginError;
@@ -1425,29 +2095,47 @@ public class PodcastApp extends javax.swing.JFrame {
     private javax.swing.JLabel lblLoginTitle;
     private javax.swing.JLabel lblMainBarLogo;
     private javax.swing.JLabel lblMainBarSlogan;
+    private javax.swing.JLabel lblTblFilter;
     private javax.swing.JLabel lblTblStudentTitle;
+    private javax.swing.JLabel lblTblStudentTitle1;
+    private javax.swing.JLabel lblTblStudentTitle2;
+    private javax.swing.JLabel lblTblStudentTitle3;
+    private javax.swing.JLabel lblTblWishList;
     private javax.swing.JLabel listeningError;
     private javax.swing.JTextField listeningField;
     private javax.swing.JLabel nameError;
     private javax.swing.JTextField nameField;
     private javax.swing.JProgressBar pgBarSplashScreen;
+    private javax.swing.JButton playPodcastBtn;
     private javax.swing.JPanel pnlAboutUs;
     private javax.swing.JPanel pnlAdmin;
+    private javax.swing.JPanel pnlFilter;
     private javax.swing.JPanel pnlHome;
     private javax.swing.JPanel pnlLoadingScreen;
     private javax.swing.JPanel pnlLoginScreen;
     private javax.swing.JPanel pnlMainBar;
     private javax.swing.JPanel pnlMainScreen;
     private javax.swing.JPanel pnlPodcastList;
+    private javax.swing.JPanel pnlQueuePods;
+    private javax.swing.JPanel pnlWishList;
     private javax.swing.JLabel podDateError;
     private javax.swing.JLabel podStudioError;
     private javax.swing.JTextField podStudioField;
     private javax.swing.JPasswordField pwdFldLogin;
+    private javax.swing.JLabel queueError;
+    private javax.swing.JTextField queueField;
+    private javax.swing.JButton queuePods;
     private javax.swing.JLabel ratingError;
     private javax.swing.JTextField ratingField;
+    private javax.swing.JButton rewindBtn;
+    private javax.swing.JButton searchBtn;
+    private javax.swing.JTextField searchField;
+    private javax.swing.JScrollPane spTblPodsQueue;
     private javax.swing.JScrollPane spTblStudent;
+    private javax.swing.JLabel statPodBgImg;
     private javax.swing.JTabbedPane tabPaneMain;
     private javax.swing.JTable tblPodcast;
+    private javax.swing.JTable tblQueuePodcast;
     private javax.swing.JTextField txtFldLoginUsername;
     private javax.swing.JButton updateBtn;
     // End of variables declaration//GEN-END:variables
